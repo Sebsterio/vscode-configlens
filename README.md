@@ -1,2 +1,3 @@
 # vscode-configlens
-Visual Studio Code extension for controlling inherited user settings from profile's settings.json
+
+Visual Studio Code extension for controlling shared global settings from custom profile's settings.json

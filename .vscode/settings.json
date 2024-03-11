@@ -1,0 +1,8 @@
+{
+	"files.exclude": { "out": false },
+	"search.exclude": { "out": true },
+	"typescript.tsdk": "./node_modules/typescript/lib",
+	"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false
+}
