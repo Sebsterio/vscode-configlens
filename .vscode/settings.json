@@ -1,8 +1,19 @@
 {
 	"files.exclude": { "out": false },
 	"search.exclude": { "out": true },
-	"typescript.tsdk": "./node_modules/typescript/lib",
 	"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+	"typescript.tsdk": "./node_modules/typescript/lib",
+
+	"eslint.enable": true,
+	"eslint.nodePath": "./node_modules",
+	"eslint.workingDirectories": ["."],
+	"eslint.options": { "overrideConfigFile": "./.eslintrc.js" },
+	"eslint.validate": ["javascript", "typescript"],
+	"eslint.run": "onSave",
+
+	"editor.formatOnSave": true,
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+
 	"editor.tabSize": 2,
 	"editor.insertSpaces": false
 }
