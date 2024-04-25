@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import * as jsonc from 'jsonc-parser';
 import { ConfigKeys, Commands } from './constants';
 
+type GetIsShared = (key: string) => boolean;
+
 class OptionCodeLens extends vscode.CodeLens {
 	public key: string;
 	constructor(range: vscode.Range, key: string) {
@@ -13,9 +15,9 @@ class OptionCodeLens extends vscode.CodeLens {
 export class ConfigLensProvider implements vscode.CodeLensProvider {
 	private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
 	private codeLenses: vscode.CodeLens[] = [];
-	private getIsShared: (key: string) => boolean;
+	private getIsShared: GetIsShared;
 
-	constructor(getIsShared: (key: string) => boolean) {
+	constructor(getIsShared: GetIsShared) {
 		this.getIsShared = getIsShared;
 	}
 
@@ -46,7 +48,6 @@ export class ConfigLensProvider implements vscode.CodeLensProvider {
 		if (codeLens instanceof OptionCodeLens) {
 			const { key } = codeLens;
 			const isShared = this.getIsShared(key);
-
 			codeLens.command = {
 				command: Commands.SetIsSharedOption,
 				arguments: [key, !isShared],
@@ -61,11 +62,7 @@ export class ConfigLensProvider implements vscode.CodeLensProvider {
 
 	onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
 
-	refresh(): void {
-		this._onDidChangeCodeLenses.fire();
-	}
+	refresh = (): void => this._onDidChangeCodeLenses.fire();
 
-	dispose(): void {
-		return this._onDidChangeCodeLenses.dispose();
-	}
+	dispose = (): void => this._onDidChangeCodeLenses.dispose();
 }

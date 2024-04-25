@@ -1,42 +1,46 @@
 import * as vscode from 'vscode';
-import { ConfigKeys, copy } from './constants';
+import { ConfigKeys } from './constants';
 
 type SharedSettingsConfig = readonly string[];
 type SharedSettingsCache = Set<string> | null;
+type GetIsShared = (key: string) => boolean;
+type SetIsShared = (key: string, shouldBeShared: boolean) => void;
 
 const [section, key] = ConfigKeys.SharedSettings.split(/\.(?=[^.]+$)/);
 const configTarget = vscode.ConfigurationTarget.Global;
 const fallback = [] as SharedSettingsConfig;
 
-const getConfigSection = () => vscode.workspace.getConfiguration(section);
+const getConfigSection = () => vscode.workspace.getConfiguration(section /*, scope */);
 const getValue = () => getConfigSection().get<SharedSettingsConfig>(key, fallback);
-const setValue = (val?: SharedSettingsConfig) => getConfigSection().update(key, val, configTarget);
+const setValue = async (val?: SharedSettingsConfig) => await getConfigSection().update(key, val, configTarget);
 
 export class SharedSettingsService {
-	private cache: SharedSettingsCache = null;
+	private _sharedSettingsCache: SharedSettingsCache = null;
 
-	private invalidateCache = () => (this.cache = null);
-
-	private get settings(): Exclude<SharedSettingsCache, null> {
-		return this.cache ?? (this.cache = new Set(getValue()));
+	private get _sharedSettings(): Exclude<SharedSettingsCache, null> {
+		if (!this._sharedSettingsCache) this._sharedSettingsCache = new Set(getValue());
+		return this._sharedSettingsCache;
 	}
-	private set settings(val: SharedSettingsCache) {
-		const value = val ? Array.from(val) : undefined;
-		setValue(value).then(this.invalidateCache, console.error);
+	private set _sharedSettings(v: SharedSettingsCache) {
+		const newSettings = v ? Array.from(v) : undefined;
+		setValue(newSettings).catch(console.error);
 	}
 
-	handleSettingsChange = (e: vscode.ConfigurationChangeEvent) => {
-		if (e.affectsConfiguration(ConfigKeys.SharedSettings)) this.invalidateCache();
+	getIsSharedOption: GetIsShared = (key) => this._sharedSettings.has(key);
+
+	setIsSharedOption: SetIsShared = (key, shouldBeShared) => {
+		const sharedSettingsAux = this._sharedSettings;
+		shouldBeShared ? sharedSettingsAux.add(key) : sharedSettingsAux.delete(key);
+		this._sharedSettings = sharedSettingsAux;
 	};
 
-	getIsSharedOption = (key: string) => this.settings.has(key);
+	private _onSharedSettingsChange = new vscode.EventEmitter<void>();
 
-	setIsSharedOption = (key: string, shouldBeShared: boolean) => {
-		const isShared = this.getIsSharedOption(key);
-		if (shouldBeShared === isShared) console.error(copy.optionAlreadySet); //temp
-		const settings = this.settings;
-		shouldBeShared ? settings.add(key) : settings.delete(key);
-		this.settings = settings;
+	onSharedSettingsChange = this._onSharedSettingsChange.event;
+
+	handleConfigChange = (e: vscode.ConfigurationChangeEvent) => {
+		if (!e.affectsConfiguration(ConfigKeys.SharedSettings)) return;
+		this._sharedSettingsCache = null;
+		this._onSharedSettingsChange.fire();
 	};
 }
-export const settingsManager = new SharedSettingsService();

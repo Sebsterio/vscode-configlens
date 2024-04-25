@@ -1,20 +1,24 @@
 import * as vscode from 'vscode';
-import { copy, Commands } from './constants';
 import { ConfigLensProvider } from './ConfigLensProvider';
 import { SharedSettingsService } from './SharedSettingsService';
+import { Commands, copy } from './constants';
 
-const lensDocSelector = { language: 'jsonc', pattern: '**/settings.json' };
+const lensDocSelector = {
+	language: 'jsonc',
+	pattern: '**/settings.json',
+};
 
 export function activate(context: vscode.ExtensionContext) {
 	const codeLensEnabled = vscode.workspace.getConfiguration().get('editor.codeLens');
 	if (!codeLensEnabled) return vscode.window.showWarningMessage(copy.codeLensDisabled);
 
-	const settingsManager = new SharedSettingsService();
-	const configLensProvider = new ConfigLensProvider(settingsManager.getIsSharedOption);
+	const sharedSettingsService = new SharedSettingsService();
+	const configLensProvider = new ConfigLensProvider(sharedSettingsService.getIsSharedOption);
 
 	const disposables = [
-		vscode.commands.registerCommand(Commands.SetIsSharedOption, settingsManager.setIsSharedOption),
-		vscode.workspace.onDidChangeConfiguration(settingsManager.handleSettingsChange),
+		sharedSettingsService.onSharedSettingsChange(configLensProvider.refresh),
+		vscode.commands.registerCommand(Commands.SetIsSharedOption, sharedSettingsService.setIsSharedOption),
+		vscode.workspace.onDidChangeConfiguration(sharedSettingsService.handleConfigChange),
 		vscode.languages.registerCodeLensProvider(lensDocSelector, configLensProvider),
 	];
 
