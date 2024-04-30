@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as jsonc from 'jsonc-parser';
+import * as jsonc from './json-utils';
 import { ConfigKeys, Commands } from './constants';
 
 type GetIsShared = (key: string) => boolean;
@@ -22,23 +22,19 @@ export class ConfigLensProvider implements vscode.CodeLensProvider {
 	}
 
 	provideCodeLenses(document: vscode.TextDocument, _token: vscode.CancellationToken) {
+		const docText = document.getText();
+		const docProps = jsonc.getRootProperties(docText);
 		this.codeLenses = [];
-		const text = document.getText();
-		const rootNode = jsonc.parseTree(text);
 
-		rootNode?.children?.forEach((node) => {
-			const isTopLevelProperty = node.type === 'property' && node.parent === rootNode;
-			if (!isTopLevelProperty) return;
-
-			const [keyNode, _valueNode] = node.children ?? [];
-			const { value: key, offset, length } = keyNode;
+		docProps.forEach(({ key, keyOffset }) => {
 			if (key === ConfigKeys.SharedSettings) return;
 
-			const start = document.positionAt(offset);
-			const end = document.positionAt(offset + length);
+			const start = document.positionAt(keyOffset);
+			const end = document.positionAt(keyOffset + key.length);
 			const range = new vscode.Range(start, end);
-			const codeLens = new OptionCodeLens(range, key);
-			this.codeLenses.push(codeLens);
+			const lens = new OptionCodeLens(range, key);
+
+			this.codeLenses.push(lens);
 		});
 
 		return this.codeLenses;

@@ -45,9 +45,7 @@
 		"watch": "tsc -watch -p ./",
 		"vscode:prepublish": "npm run compile"
 	},
-	"dependencies": {
-		"jsonc-parser": "^3.2.1"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"@types/eslint": "^8.56.5",
 		"@types/node": "^20.11.25",
