@@ -10,9 +10,9 @@ const [section, key] = ConfigKeys.SharedSettings.split(/\.(?=[^.]+$)/);
 const configTarget = vscode.ConfigurationTarget.Global;
 const fallback = [] as SharedSettingsConfig;
 
-const getConfigSection = () => vscode.workspace.getConfiguration(section /*, scope */);
-const getValue = () => getConfigSection().get<SharedSettingsConfig>(key, fallback);
-const setValue = async (val?: SharedSettingsConfig) => await getConfigSection().update(key, val, configTarget);
+const getSection = () => vscode.workspace.getConfiguration(section /*, scope */);
+const getValue = () => getSection().get<SharedSettingsConfig>(key, fallback);
+const setValue = async (val?: SharedSettingsConfig) => await getSection().update(key, val, configTarget);
 
 export class SharedSettingsService {
 	private _sharedSettingsCache: SharedSettingsCache = null;
@@ -23,7 +23,7 @@ export class SharedSettingsService {
 	}
 	private set _sharedSettings(v: SharedSettingsCache) {
 		const newSettings = v ? Array.from(v) : undefined;
-		setValue(newSettings).catch(console.error);
+		setValue(newSettings).catch(console.error); // eslint-disable-line no-console
 	}
 
 	getIsSharedOption: GetIsShared = (key) => this._sharedSettings.has(key);
@@ -38,8 +38,7 @@ export class SharedSettingsService {
 
 	onSharedSettingsChange = this._onSharedSettingsChange.event;
 
-	handleConfigChange = (e: vscode.ConfigurationChangeEvent) => {
-		if (!e.affectsConfiguration(ConfigKeys.SharedSettings)) return;
+	handleConfigChange = () => {
 		this._sharedSettingsCache = null;
 		this._onSharedSettingsChange.fire();
 	};

@@ -5,6 +5,8 @@ export const copy = {
 
 export const enum ConfigKeys {
 	SharedSettings = 'workbench.settings.applyToAllProfiles',
+	CodeLens = 'editor.codeLens',
+	ConfigLens = 'configLens.enabled',
 }
 
 export const enum Commands {

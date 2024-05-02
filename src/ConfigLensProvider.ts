@@ -15,13 +15,17 @@ class OptionCodeLens extends vscode.CodeLens {
 export class ConfigLensProvider implements vscode.CodeLensProvider {
 	private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
 	private codeLenses: vscode.CodeLens[] = [];
+	private isEnabled: boolean;
 	private getIsShared: GetIsShared;
 
-	constructor(getIsShared: GetIsShared) {
+	constructor(isEnabled: boolean | undefined, getIsShared: GetIsShared) {
+		this.isEnabled = !!isEnabled;
 		this.getIsShared = getIsShared;
 	}
 
 	provideCodeLenses(document: vscode.TextDocument, _token: vscode.CancellationToken) {
+		if (!this.isEnabled) return [];
+
 		const docText = document.getText();
 		const docProps = jsonc.getRootProperties(docText);
 		this.codeLenses = [];
@@ -59,6 +63,11 @@ export class ConfigLensProvider implements vscode.CodeLensProvider {
 	onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
 
 	refresh = (): void => this._onDidChangeCodeLenses.fire();
+
+	toggleFeature = (isEnabled: unknown /* boolean */) => {
+		this.isEnabled = !!isEnabled;
+		this.refresh();
+	};
 
 	dispose = (): void => this._onDidChangeCodeLenses.dispose();
 }

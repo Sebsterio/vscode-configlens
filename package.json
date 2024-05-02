@@ -21,6 +21,17 @@
 		"onLanguage:jsonc"
 	],
 	"contributes": {
+		"configuration": {
+			"id": "configLens",
+			"title": "Config Lens",
+			"properties": {
+				"configLens.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enables/disables all config lenses"
+				}
+			}
+		},
 		"commands": [
 			{
 				"category": "Config Lens",
@@ -41,8 +52,8 @@
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"lint": "eslint src/**/*.ts",
 		"format": "prettier src/**/*.ts --write",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"compile": "rm -rf out/* && tsc -p ./",
+		"watch": "rm -rf out/* && tsc -watch -p ./",
 		"vscode:prepublish": "npm run compile"
 	},
 	"dependencies": {},
