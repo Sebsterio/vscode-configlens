@@ -6,7 +6,7 @@ import { createConfigChangeHandler } from './helpers';
 
 const lensDocSelector = {
 	language: 'jsonc',
-	pattern: '**/settings.json',
+	pattern: '**/User/**/settings.json',
 };
 
 export function activate(context: vscode.ExtensionContext) {
