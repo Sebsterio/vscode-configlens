@@ -2,8 +2,7 @@
 	"name": "vscode-configlens",
 	"displayName": "Config Lens",
 	"description": "Improved visibility and controls of shared global settings in Visual Studio Code",
-	"publisher": "sebster",
-	"license": "MIT",
+	"publisher": "Sebster",
 	"version": "0.0.1",
 	"preview": true,
 	"icon": "images/configlens-icon.png",
@@ -12,7 +11,6 @@
 	],
 	"keywords": [
 		"settings.json",
-		"shared settings",
 		"applyToAllProfiles",
 		"apply to all profiles"
 	],
@@ -49,14 +47,12 @@
 		"out"
 	],
 	"scripts": {
-		"postinstall": "node ./node_modules/vscode/bin/install",
 		"lint": "eslint src/**/*.ts",
 		"format": "prettier src/**/*.ts --write",
 		"compile": "rm -rf out/* && tsc -p ./",
 		"watch": "rm -rf out/* && tsc -watch -p ./",
 		"vscode:prepublish": "npm run compile"
 	},
-	"dependencies": {},
 	"devDependencies": {
 		"@types/eslint": "^8.56.5",
 		"@types/node": "^20.11.25",
@@ -70,6 +66,7 @@
 		"prettier": "^3.2.5",
 		"typescript": ">=4.7.4 <5.4.0"
 	},
+	"license": "SEE LICENSE.txt",
 	"homepage": "https://github.com/Sebsterio/vscode-configlens",
 	"repository": {
 		"type": "git",
