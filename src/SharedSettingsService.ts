@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ConfigKeys } from './constants';
+import { ConfigKeys, copy } from './constants';
 
 type SharedSettingsConfig = readonly string[];
 type SharedSettingsCache = Set<string> | null;
@@ -10,9 +10,14 @@ const [section, key] = ConfigKeys.SharedSettings.split(/\.(?=[^.]+$)/);
 const configTarget = vscode.ConfigurationTarget.Global;
 const fallback = [] as SharedSettingsConfig;
 
-const getSection = () => vscode.workspace.getConfiguration(section /*, scope */);
+const getSection = () => vscode.workspace.getConfiguration(section);
 const getValue = () => getSection().get<SharedSettingsConfig>(key, fallback);
 const setValue = async (val?: SharedSettingsConfig) => await getSection().update(key, val, configTarget);
+
+const handleUpdateConfigError = (err: unknown) => {
+	const isDirty = err instanceof Error && err.name === 'CodeExpectedError';
+	if (isDirty) vscode.window.showWarningMessage(copy.mainDocIsDirty);
+};
 
 export class SharedSettingsService {
 	private _sharedSettingsCache: SharedSettingsCache = null;
@@ -23,7 +28,7 @@ export class SharedSettingsService {
 	}
 	private set _sharedSettings(v: SharedSettingsCache) {
 		const newSettings = v ? Array.from(v) : undefined;
-		setValue(newSettings).catch(console.error); // eslint-disable-line no-console
+		setValue(newSettings).catch(handleUpdateConfigError);
 	}
 
 	getIsSharedOption: GetIsShared = (key) => this._sharedSettings.has(key);

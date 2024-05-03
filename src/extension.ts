@@ -13,11 +13,13 @@ export function activate(context: vscode.ExtensionContext) {
 	const config = vscode.workspace.getConfiguration();
 	const codeLensEnabled = config.get<boolean>(ConfigKeys.CodeLens);
 	const configLensEnabled = config.get<boolean>(ConfigKeys.ConfigLens);
+	const isEnabled = configLensEnabled && codeLensEnabled;
+	const isInvalid = configLensEnabled && !codeLensEnabled;
 
-	if (!codeLensEnabled) return vscode.window.showWarningMessage(copy.codeLensDisabled);
+	if (isInvalid) vscode.window.showWarningMessage(copy.codeLensDisabled);
 
 	const sharedSettingsService = new SharedSettingsService();
-	const configLensProvider = new ConfigLensProvider(configLensEnabled, sharedSettingsService.getIsSharedOption);
+	const configLensProvider = new ConfigLensProvider(!!isEnabled, sharedSettingsService.getIsSharedOption);
 
 	const handleConfigChange = createConfigChangeHandler(
 		[ConfigKeys.ConfigLens, configLensProvider.toggleFeature],

@@ -12,59 +12,50 @@ class OptionCodeLens extends vscode.CodeLens {
 	}
 }
 
+const getLensCommand = (key: string, isShared: boolean) => ({
+	command: Commands.SetIsSharedOption,
+	arguments: [key, !isShared],
+	title: isShared ? 'shared' : 'private',
+	tooltip: isShared
+		? `Remove "${key}" from "${ConfigKeys.SharedSettings}"`
+		: `Add "${key}" to "${ConfigKeys.SharedSettings}"`,
+});
+
 export class ConfigLensProvider implements vscode.CodeLensProvider {
 	private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
-	private codeLenses: vscode.CodeLens[] = [];
 	private isEnabled: boolean;
 	private getIsShared: GetIsShared;
 
-	constructor(isEnabled: boolean | undefined, getIsShared: GetIsShared) {
+	constructor(isEnabled: boolean, getIsShared: GetIsShared) {
 		this.isEnabled = !!isEnabled;
 		this.getIsShared = getIsShared;
 	}
 
-	provideCodeLenses(document: vscode.TextDocument, _token: vscode.CancellationToken) {
-		if (!this.isEnabled) return [];
+	provideConfigLens(key: string, keyOffset: number, document: vscode.TextDocument) {
+		const start = document.positionAt(keyOffset);
+		const end = document.positionAt(keyOffset + key.length);
+		const range = new vscode.Range(start, end);
+		const lens = new OptionCodeLens(range, key);
+		return lens;
+	}
 
+	provideCodeLenses(document: vscode.TextDocument, _token: vscode.CancellationToken) {
+		if (!this.isEnabled || document.isDirty) return [];
 		const docText = document.getText();
 		const docProps = jsonc.getRootProperties(docText);
-		this.codeLenses = [];
-
-		docProps.forEach(({ key, keyOffset }) => {
-			if (key === ConfigKeys.SharedSettings) return;
-
-			const start = document.positionAt(keyOffset);
-			const end = document.positionAt(keyOffset + key.length);
-			const range = new vscode.Range(start, end);
-			const lens = new OptionCodeLens(range, key);
-
-			this.codeLenses.push(lens);
-		});
-
-		return this.codeLenses;
+		const validProps = docProps.filter(({ key }) => key !== ConfigKeys.SharedSettings);
+		const lenses = validProps.map(({ key, keyOffset }) => this.provideConfigLens(key, keyOffset, document));
+		return lenses;
 	}
 
-	resolveCodeLens(codeLens: vscode.CodeLens, _token: vscode.CancellationToken) {
-		if (codeLens instanceof OptionCodeLens) {
-			const { key } = codeLens;
-			const isShared = this.getIsShared(key);
-			codeLens.command = {
-				command: Commands.SetIsSharedOption,
-				arguments: [key, !isShared],
-				title: isShared ? 'shared' : 'private',
-				tooltip: isShared
-					? `Remove "${key}" from "${ConfigKeys.SharedSettings}"`
-					: `Add "${key}" to "${ConfigKeys.SharedSettings}"`,
-			};
-		}
-		return codeLens;
+	resolveCodeLens(lens: vscode.CodeLens, _token: vscode.CancellationToken) {
+		if (lens instanceof OptionCodeLens) lens.command = getLensCommand(lens.key, this.getIsShared(lens.key));
+		return lens.command ? lens : null;
 	}
-
-	onDidChangeCodeLenses = this._onDidChangeCodeLenses.event;
 
 	refresh = (): void => this._onDidChangeCodeLenses.fire();
 
-	toggleFeature = (isEnabled: unknown /* boolean */) => {
+	toggleFeature = (isEnabled: boolean | undefined) => {
 		this.isEnabled = !!isEnabled;
 		this.refresh();
 	};
