@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ConfigLensProvider } from './ConfigLensProvider';
 import { SharedSettingsService } from './SharedSettingsService';
 import { ConfigKeys, Commands, copy } from './constants';
-import { createConfigChangeHandler } from './helpers';
+import { createConfigChangeHandler, createActiveDocSaveHandler } from './helpers';
 
 const lensDocSelector = {
 	language: 'jsonc',
@@ -30,6 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 		sharedSettingsService.onSharedSettingsChange(configLensProvider.refresh),
 		vscode.commands.registerCommand(Commands.SetIsSharedOption, sharedSettingsService.setIsSharedOption),
 		vscode.workspace.onDidChangeConfiguration(handleConfigChange),
+		vscode.workspace.onDidSaveTextDocument(createActiveDocSaveHandler(lensDocSelector, configLensProvider.refresh)),
 		vscode.languages.registerCodeLensProvider(lensDocSelector, configLensProvider),
 	];
 

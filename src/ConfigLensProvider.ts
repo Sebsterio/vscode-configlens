@@ -22,7 +22,6 @@ const getLensCommand = (key: string, isShared: boolean) => ({
 });
 
 export class ConfigLensProvider implements vscode.CodeLensProvider {
-	private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
 	private isEnabled: boolean;
 	private getIsShared: GetIsShared;
 
@@ -51,6 +50,11 @@ export class ConfigLensProvider implements vscode.CodeLensProvider {
 	resolveCodeLens(lens: vscode.CodeLens, _token: vscode.CancellationToken) {
 		if (lens instanceof OptionCodeLens) lens.command = getLensCommand(lens.key, this.getIsShared(lens.key));
 		return lens.command ? lens : null;
+	}
+
+	private _onDidChangeCodeLenses = new vscode.EventEmitter<void>();
+	get onDidChangeCodeLenses(): vscode.Event<void> {
+		return this._onDidChangeCodeLenses.event;
 	}
 
 	refresh = (): void => this._onDidChangeCodeLenses.fire();

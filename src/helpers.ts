@@ -14,3 +14,11 @@ export const createConfigChangeHandler = (...bindings: Binding[]) => {
 		bindings.forEach(resolve);
 	};
 };
+
+export const createActiveDocSaveHandler = (docSelector: vscode.DocumentSelector, handler: () => void) => {
+	return function handleActiveDocSave(document: vscode.TextDocument) {
+		const isActiveDocument = document === vscode.window.activeTextEditor?.document;
+		const isSettingsDocument = vscode.languages.match(docSelector, document) > 0;
+		if (isActiveDocument && isSettingsDocument) handler();
+	};
+};
