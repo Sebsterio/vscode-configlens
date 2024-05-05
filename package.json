@@ -1,7 +1,7 @@
 {
 	"name": "vscode-configlens",
 	"displayName": "Config Lens",
-	"description": "Improved visibility and controls of shared global settings in Visual Studio Code",
+	"description": "Improved visibility and controls for shared global settings in Visual Studio Code",
 	"publisher": "Sebster",
 	"version": "0.0.1",
 	"preview": true,
