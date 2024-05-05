@@ -3,7 +3,7 @@
 	"displayName": "Config Lens",
 	"description": "Improved visibility and controls for shared global settings in Visual Studio Code",
 	"publisher": "Sebster",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"preview": true,
 	"icon": "images/configlens-icon.png",
 	"categories": [
