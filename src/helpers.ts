@@ -3,22 +3,21 @@ import type { ConfigKey, ConfigValueTypes } from './constants';
 
 type Handler<K extends ConfigKey> = (value: ConfigValueTypes[K] | undefined) => void;
 type Binding = { [K in keyof ConfigValueTypes]: [configKey: K, handler: Handler<K>] }[ConfigKey];
-type Resolver = (binding: Binding) => void;
 
-export const createConfigChangeHandler = (...bindings: Binding[]) => {
-	return function handleConfigChange(e: vscode.ConfigurationChangeEvent) {
-		const config = vscode.workspace.getConfiguration();
-		const resolve: Resolver = ([key, handler]) => {
-			e.affectsConfiguration(key) && handler(config.get(key));
-		};
-		bindings.forEach(resolve);
-	};
+export const createConfigChangeHandler = (...[key, handler]: Binding) => {
+	const configRef = vscode.workspace.getConfiguration();
+	const runHandler = () => handler(configRef.get(key));
+	const handleChange = (e: vscode.ConfigurationChangeEvent) => e.affectsConfiguration(key) && runHandler();
+	return handleChange;
 };
 
-export const createActiveDocSaveHandler = (docSelector: vscode.DocumentSelector, handler: () => void) => {
-	return function handleActiveDocSave(document: vscode.TextDocument) {
-		const isActiveDocument = document === vscode.window.activeTextEditor?.document;
-		const isSettingsDocument = vscode.languages.match(docSelector, document) > 0;
-		if (isActiveDocument && isSettingsDocument) handler();
-	};
+const getIsActiveDoc = (doc: vscode.TextDocument) => doc === vscode.window.activeTextEditor?.document;
+
+type ExtendedSelector = vscode.DocumentSelector & { active?: boolean };
+
+export const createDocSaveHandler = (docSelector: ExtendedSelector, handler: () => void) => {
+	const getIsEditorMatch = (doc: vscode.TextDocument) => !docSelector.active || getIsActiveDoc(doc);
+	const getIsDocMatch = (doc: vscode.TextDocument) => vscode.languages.match(docSelector, doc) > 0;
+	const handleSave = (doc: vscode.TextDocument) => getIsEditorMatch(doc) && getIsDocMatch(doc) && handler();
+	return handleSave;
 };

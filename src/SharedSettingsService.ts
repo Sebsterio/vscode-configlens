@@ -40,8 +40,9 @@ export class SharedSettingsService {
 	};
 
 	private _onSharedSettingsChange = new vscode.EventEmitter<void>();
-
-	onSharedSettingsChange = this._onSharedSettingsChange.event;
+	get onSharedSettingsChange(): vscode.Event<void> {
+		return this._onSharedSettingsChange.event;
+	}
 
 	handleConfigChange = () => {
 		this._sharedSettingsCache = null;

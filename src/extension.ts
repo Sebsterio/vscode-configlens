@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ConfigLensProvider } from './ConfigLensProvider';
 import { SharedSettingsService } from './SharedSettingsService';
 import { ConfigKeys, Commands, copy } from './constants';
-import { createConfigChangeHandler, createActiveDocSaveHandler } from './helpers';
+import { createConfigChangeHandler, createDocSaveHandler } from './helpers';
 
 const lensDocSelector = {
 	language: 'jsonc',
@@ -21,16 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const sharedSettingsService = new SharedSettingsService();
 	const configLensProvider = new ConfigLensProvider(!!isEnabled, sharedSettingsService.getIsSharedOption);
 
-	const handleConfigChange = createConfigChangeHandler(
-		[ConfigKeys.ConfigLens, configLensProvider.toggleFeature],
-		[ConfigKeys.SharedSettings, sharedSettingsService.handleConfigChange]
-	);
-
 	const disposables = [
 		sharedSettingsService.onSharedSettingsChange(configLensProvider.refresh),
 		vscode.commands.registerCommand(Commands.SetIsSharedOption, sharedSettingsService.setIsSharedOption),
-		vscode.workspace.onDidChangeConfiguration(handleConfigChange),
-		vscode.workspace.onDidSaveTextDocument(createActiveDocSaveHandler(lensDocSelector, configLensProvider.refresh)),
+		vscode.workspace.onDidChangeConfiguration(createConfigChangeHandler(ConfigKeys.ConfigLens, configLensProvider.toggleFeature)), // prettier-ignore
+		vscode.workspace.onDidChangeConfiguration(createConfigChangeHandler(ConfigKeys.SharedSettings, sharedSettingsService.handleConfigChange)), // prettier-ignore
+		vscode.workspace.onDidSaveTextDocument(createDocSaveHandler({...lensDocSelector, active: true}, configLensProvider.refresh)), // prettier-ignore
 		vscode.languages.registerCodeLensProvider(lensDocSelector, configLensProvider),
 	];
 
