@@ -1,4 +1,8 @@
+node_modules/**
+src/**
+out/test/**
 .vscode/**
+.vscode-test/**
 .git/**
 .github/**
 .gitignore
@@ -7,8 +11,6 @@
 .gitignore
 package-lock.json
 tsconfig.json
-node_modules/**
-src/**
 **/*.ts
 **/*.map 
 *.local.*

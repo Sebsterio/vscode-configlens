@@ -4,7 +4,9 @@ export const copy = {
 	mainDocIsDirty: 'Command unavailable due to unsaved changes in settings.json (default profile)', // ....
 };
 
-// export const extensionPrefix = 'vscode-configlens';
+export const extensionID = 'Sebster.vscode-configlens';
+
+export const extensionPrefix = 'vscode-configlens';
 
 export const enum Commands {
 	SetIsSharedOption = 'vscode-configlens.setIsSharedOption',
